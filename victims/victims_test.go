@@ -115,23 +115,25 @@ func TestDeleteRandomPods(t *testing.T) {
 	podList := getPodList(client).Items
 	assert.Lenf(t, podList, 3, "Expected 3 items in podList, got %d", len(podList))
 
-	err := v.DeleteRandomPods(client, 0)
+	runPodList, _ := v.RunningPods(client)
+
+	err := v.DeleteRandomPods(client, runPodList, 0)
 	assert.EqualError(t, err, "No terminations requested for Pod name")
 
-	err = v.DeleteRandomPods(client, -1)
+	err = v.DeleteRandomPods(client, runPodList, -1)
 	assert.EqualError(t, err, "Cannot request negative terminations 2 for Pod name")
 
-	_ = v.DeleteRandomPods(client, 1)
+	_ = v.DeleteRandomPods(client, runPodList, 1)
 	podList = getPodList(client).Items
 	assert.Lenf(t, podList, 2, "Expected 2 items in podList, got %d", len(podList))
 
-	_ = v.DeleteRandomPods(client, 2)
+	_ = v.DeleteRandomPods(client, runPodList, 2)
 	podList = getPodList(client).Items
 	assert.Lenf(t, podList, 1, "Expected 1 item in podList, got %d", len(podList))
 	name := podList[0].GetName()
 	assert.Equalf(t, name, "app2", "Expected not running pods not be deleted")
 
-	err = v.DeleteRandomPods(client, 2)
+	err = v.DeleteRandomPods(client, runPodList, 2)
 	assert.EqualError(t, err, KIND+" "+NAME+" has no running pods at the moment")
 }
 
@@ -165,7 +167,8 @@ func TestDeleteRandomPod(t *testing.T) {
 	podList := getPodList(client).Items
 	assert.Len(t, podList, 1)
 
-	err := v.DeleteRandomPods(client, 2)
+	runPodList, _ := v.RunningPods(client)
+	err := v.DeleteRandomPods(client, runPodList, 2)
 	assert.EqualError(t, err, KIND+" "+NAME+" has no running pods at the moment")
 }
 

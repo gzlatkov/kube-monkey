@@ -47,7 +47,7 @@ type VictimAPICalls interface {
 	Pods(kube.Interface) ([]v1.Pod, error)
 	DeletePod(kube.Interface, string) error
 	DeleteRandomPod(kube.Interface) error // Deprecated, but faster than DeleteRandomPods for single pod termination
-	DeleteRandomPods(kube.Interface, int) error
+	DeleteRandomPods(kube.Interface, []v1.Pod, int) error
 	TerminateAllPods(kube.Interface) error
 	IsBlacklisted() bool
 	IsWhitelisted() bool
@@ -127,13 +127,8 @@ func (v *VictimBase) DeletePod(clientset kube.Interface, podName string) error {
 }
 
 // Removes specified number of random pods for the victim
-func (v *VictimBase) DeleteRandomPods(clientset kube.Interface, killNum int) error {
+func (v *VictimBase) DeleteRandomPods(clientset kube.Interface, pods []v1.Pod, killNum int) error {
 	// Pick a target pod to delete
-	pods, err := v.RunningPods(clientset)
-	if err != nil {
-		return err
-	}
-
 	numPods := len(pods)
 	switch {
 	case numPods == 0:
@@ -196,7 +191,7 @@ func (v *VictimBase) TerminateAllPods(clientset kube.Interface) error {
 	return nil
 }
 
-// Deprecated for DeleteRandomPods(clientset, 1)
+// Deprecated for DeleteRandomPods(clientset, pods, 1)
 // Remove a random pod for the victim
 func (v *VictimBase) DeleteRandomPod(clientset kube.Interface) error {
 	// Pick a target pod to delete
